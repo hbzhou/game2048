@@ -18,15 +18,12 @@ package games.game2048
  * You can find more examples in 'TestGame2048Helper'.
 */
 fun <T : Any> List<T?>.moveAndMergeEqual(merge: (T) -> T): List<T> {
-    val foldRight = fold(mutableListOf()) { acc: MutableList<T>, current: T? ->
-        if (current != null) {
-            if (acc.isNotEmpty() && acc.last() == current) {
-                acc[acc.size - 1] = merge(current)
-            } else {
-                acc.add(current)
-            }
+    return fold(mutableListOf()) { acc: MutableList<T>, current: T? ->
+        if (acc.isNotEmpty() && current == acc.last()) {
+            acc[acc.size - 1] = merge(current)
+        } else {
+            current?.apply { acc.add(this) }
         }
         acc
     }
-    return foldRight
 }

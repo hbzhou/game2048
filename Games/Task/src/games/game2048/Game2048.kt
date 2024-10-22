@@ -2,6 +2,7 @@ package games.game2048
 
 import board.Cell
 import board.Direction
+import board.Direction.*
 import board.GameBoard
 import board.createGameBoard
 import games.game.Game
@@ -55,17 +56,13 @@ fun GameBoard<Int?>.addNewValue(initializer: Game2048Initializer<Int>) {
  * Return 'true' if the values were moved and 'false' otherwise.
  */
 fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
-    val originalValues = rowOrColumn.mapNotNull { get(it) }
-    val mergedValues = originalValues.moveAndMergeEqual { it * 2 }
-    val mergedValueSize = mergedValues.size
-    if (originalValues.size == mergedValueSize) {
-        for (i in 0 until mergedValueSize) {
-            set(rowOrColumn[i], mergedValues[i])
-        }
-    } else {
-        for (i in 0 until mergedValueSize) {
-            set(rowOrColumn[width - mergedValueSize + 1], mergedValues[i])
-        }
+    val mergeValues = rowOrColumn.map { get(it) }.moveAndMergeEqual { it * 2 }
+    val size = mergeValues.size
+    val rowOrColumnSize = rowOrColumn.size
+    if (size == rowOrColumnSize|| size == 0 ) return false
+    mergeValues.forEachIndexed { index, value -> set(rowOrColumn[index], value) }
+    for (index in size until rowOrColumnSize) {
+        set(rowOrColumn[index], null)
     }
     return true
 }
@@ -79,9 +76,9 @@ fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
  */
 fun GameBoard<Int?>.moveValues(direction: Direction): Boolean {
     return when (direction) {
-        Direction.RIGHT -> (1..width).all { index -> moveValuesInRowOrColumn(getRow(index, 1..width)) }
-        Direction.UP -> (1..width).all { index -> moveValuesInRowOrColumn(getColumn(1..width, index).reversed()) }
-        Direction.DOWN -> (1..width).all { index -> moveValuesInRowOrColumn(getColumn(1..width, index)) }
-        Direction.LEFT -> (1..width).all { index -> moveValuesInRowOrColumn(getRow(index, 1..width).reversed()) }
+        UP -> (1..width).map { index -> moveValuesInRowOrColumn(getColumn(1..width, index)) }.any { it }
+        DOWN -> (1..width).map { index -> moveValuesInRowOrColumn(getColumn(1..width, index).reversed()) }.any { it }
+        RIGHT -> (1..width).map { index -> moveValuesInRowOrColumn(getRow(index, 1..width).reversed()) }.any { it }
+        LEFT -> (1..width).map { index -> moveValuesInRowOrColumn(getRow(index, 1..width)) }.any { it }
     }
 }
